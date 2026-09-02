@@ -9,6 +9,7 @@ import ExperienceSection from '@/app/components/ExperienceSection';
 import EducationSection from '@/app/components/EducationSection';
 import ContactSection from '@/app/components/ContactSection';
 import ScrollRevealInit from '@/app/components/ScrollRevealInit';
+import BackgroundMusic from '@/app/components/BackgroundMusic';
 
 export default function HomePage() {
   return (
@@ -23,6 +24,7 @@ export default function HomePage() {
       <ContactSection />
       <Footer />
       <ScrollRevealInit />
+      <BackgroundMusic />
     </main>
   );
 }
