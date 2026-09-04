@@ -1,49 +1,48 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function BackgroundMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    audio.volume = 0.5;
     audio.loop = true;
     audio.preload = 'auto';
 
-    const playAudio = async () => {
-      try {
-        await audio.play();
-      } catch {
-        // Autoplay blocked — first user interaction will start it.
+    const startMusic = async () => {
+      if (audio.paused) {
+        try {
+          await audio.play();
+          setStarted(true);
+
+          document.removeEventListener('click', startMusic);
+          document.removeEventListener('touchstart', startMusic);
+          document.removeEventListener('pointerdown', startMusic);
+          document.removeEventListener('keydown', startMusic);
+        } catch {
+          // Keep listeners active until a valid user interaction allows playback.
+        }
       }
     };
 
-    // Try autoplay immediately
-    playAudio();
+    // Desktop browsers may allow this; mobile browsers usually require interaction.
+    void startMusic();
 
-    // If browser blocks autoplay, start audio on first user interaction
-    const handleFirstInteraction = () => {
-      playAudio();
-
-      // Once started, no need to keep listening
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
-      document.removeEventListener('pointerdown', handleFirstInteraction);
-    };
-
-    document.addEventListener('click', handleFirstInteraction);
-    document.addEventListener('touchstart', handleFirstInteraction);
-    document.addEventListener('keydown', handleFirstInteraction);
-    document.addEventListener('pointerdown', handleFirstInteraction);
+    document.addEventListener('click', startMusic);
+    document.addEventListener('touchstart', startMusic, { passive: true });
+    document.addEventListener('pointerdown', startMusic);
+    document.addEventListener('keydown', startMusic);
 
     return () => {
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
-      document.removeEventListener('pointerdown', handleFirstInteraction);
+      document.removeEventListener('click', startMusic);
+      document.removeEventListener('touchstart', startMusic);
+      document.removeEventListener('pointerdown', startMusic);
+      document.removeEventListener('keydown', startMusic);
     };
   }, []);
 
@@ -53,6 +52,7 @@ export default function BackgroundMusic() {
       src="/audio/Mahaan_60_to_95.mp3"
       loop
       preload="auto"
+      playsInline
       aria-hidden="true"
     />
   );
