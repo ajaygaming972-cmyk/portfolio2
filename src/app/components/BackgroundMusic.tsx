@@ -1,59 +1,48 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 export default function BackgroundMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [started, setStarted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  useEffect(() => {
+  const toggleMusic = async () => {
     const audio = audioRef.current;
+
     if (!audio) return;
 
-    audio.volume = 0.5;
-    audio.loop = true;
-    audio.preload = 'auto';
-
-    const startMusic = async () => {
+    try {
       if (audio.paused) {
-        try {
-          await audio.play();
-          setStarted(true);
-
-          document.removeEventListener('click', startMusic);
-          document.removeEventListener('touchstart', startMusic);
-          document.removeEventListener('pointerdown', startMusic);
-          document.removeEventListener('keydown', startMusic);
-        } catch {
-          // Keep listeners active until a valid user interaction allows playback.
-        }
+        audio.volume = 0.5;
+        await audio.play();
+        setIsPlaying(true);
+      } else {
+        audio.pause();
+        setIsPlaying(false);
       }
-    };
-
-    // Desktop browsers may allow this; mobile browsers usually require interaction.
-    void startMusic();
-
-    document.addEventListener('click', startMusic);
-    document.addEventListener('touchstart', startMusic, { passive: true });
-    document.addEventListener('pointerdown', startMusic);
-    document.addEventListener('keydown', startMusic);
-
-    return () => {
-      document.removeEventListener('click', startMusic);
-      document.removeEventListener('touchstart', startMusic);
-      document.removeEventListener('pointerdown', startMusic);
-      document.removeEventListener('keydown', startMusic);
-    };
-  }, []);
+    } catch (error) {
+      console.error('Music playback failed:', error);
+    }
+  };
 
   return (
-    <audio
-      ref={audioRef}
-      src="/audio/Mahaan_60_to_95.mp3"
-      loop
-      preload="auto"
-      playsInline
-      aria-hidden="true"
-    />
+    <>
+      <audio
+        ref={audioRef}
+        src="/audio/Mahaan_60_to_95.mp3"
+        loop
+        preload="auto"
+        playsInline
+      />
+
+      <button
+        type="button"
+        onClick={toggleMusic}
+        aria-label={isPlaying ? 'Pause background music' : 'Play background music'}
+        className="fixed bottom-6 right-6 z-[9999] flex h-12 w-12 items-center justify-center rounded-full border border-primary/40 bg-background/90 text-xl shadow-lg backdrop-blur-md"
+      >
+        {isPlaying ? '🔊' : '🎵'}
+      </button>
+    </>
   );
 }
