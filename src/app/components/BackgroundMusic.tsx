@@ -10,35 +10,33 @@ export default function BackgroundMusic() {
     if (!audio) return;
 
     audio.volume = 0.5;
+    audio.loop = true;
 
-    const enableSound = async () => {
-      try {
-        audio.muted = false;
-        await audio.play();
+    const startMusic = () => {
+      if (!audio.paused) return;
 
-        document.removeEventListener('pointerdown', enableSound, true);
-        document.removeEventListener('touchstart', enableSound, true);
-        document.removeEventListener('click', enableSound, true);
-        document.removeEventListener('keydown', enableSound, true);
-      } catch (error) {
-        console.log('Audio waiting for interaction');
-      }
+      audio
+        .play()
+        .then(() => {
+          window.removeEventListener('touchstart', startMusic);
+          window.removeEventListener('click', startMusic);
+        })
+        .catch(() => {
+          // Next interaction par dobara try karega
+        });
     };
 
-    // Mobile browsers allow muted autoplay
-    audio.play().catch(() => {});
+    // Mobile ke liye first real interaction
+    window.addEventListener('touchstart', startMusic, {
+      passive: true,
+    });
 
-    // Capture phase = website ke kisi button/link se event block nahi hoga
-    document.addEventListener('pointerdown', enableSound, true);
-    document.addEventListener('touchstart', enableSound, true);
-    document.addEventListener('click', enableSound, true);
-    document.addEventListener('keydown', enableSound, true);
+    // Desktop fallback
+    window.addEventListener('click', startMusic);
 
     return () => {
-      document.removeEventListener('pointerdown', enableSound, true);
-      document.removeEventListener('touchstart', enableSound, true);
-      document.removeEventListener('click', enableSound, true);
-      document.removeEventListener('keydown', enableSound, true);
+      window.removeEventListener('touchstart', startMusic);
+      window.removeEventListener('click', startMusic);
     };
   }, []);
 
@@ -46,10 +44,8 @@ export default function BackgroundMusic() {
     <audio
       ref={audioRef}
       src="/audio/Mahaan_60_to_95.mp3"
-      autoPlay
-      muted
-      loop
       preload="auto"
+      loop
       playsInline
     />
   );
