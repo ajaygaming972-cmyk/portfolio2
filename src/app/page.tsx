@@ -24,7 +24,7 @@ export default function HomePage() {
       <ContactSection />
       <Footer />
       <ScrollRevealInit />
-      <BackgroundMusic />
+      
     </main>
   );
 }
